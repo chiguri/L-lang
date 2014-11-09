@@ -1,0 +1,27 @@
+(begin
+  (def X)
+  (def Y)
+  (def R)
+  (def (ack)
+    (begin
+      (if (nzero? X)
+          (if (nzero? Y)
+              (begin
+                (def T)
+                (sub1 Y)
+                (<- T X)
+                (ack)
+                (<- Y R)
+                (<- X T)
+                (sub1 X)
+                (ack))
+              (begin
+                (add1 Y)
+                (sub1 X)
+                (ack)))
+          (begin
+            (<- R Y)
+            (add1 R)))))
+  (<-- X 3)
+  (<-- Y 4)
+  (ack))

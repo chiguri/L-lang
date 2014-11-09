@@ -1,0 +1,19 @@
+(begin
+  (def W)
+  (def X)
+  (def Y)
+  (def (add)
+     (begin
+        (def Z)
+        (def (loop)
+           (if (nzero? Z)
+               (begin
+                  (sub1 Z) (add1 W) (loop))))
+        (clear W)
+        (<- Z X)
+        (loop)
+        (<- Z Y)
+        (loop)))
+  (<-- X 3)
+  (<-- Y 4)
+  (add))
