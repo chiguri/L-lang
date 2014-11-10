@@ -1,0 +1,27 @@
+(begin
+  (def X)
+  (def Y)
+  (def (ex4-2)
+    (begin
+      (def Z)
+      (def W)
+      (def (W->Y)
+        (if (nzero? W)
+            (begin (add1 Y) (sub1 W) (W->Y))
+            (begin)))
+      (def (Z->XW)
+        (if (nzero? Z)
+            (begin (add1 X) (add1 W) (sub1 Z) (Z->XW)) 
+            (begin)))
+      (def (X->Z)
+        (if (nzero? X)
+            (begin
+              (add1 Z) (sub1 X) (X->Z))
+            (begin)))
+      (X->Z) (clear Y) (Z->XW)
+      (if (nzero? Y) ; YがXでなければこの時点でYは0のはず。
+          (begin) ; YがXであるときはXを復元した時点でYが同じ値
+          (W->Y)))) ; そうでないなら普通に復元（YがXかつX=0のときこちらにくるが、問題ない）
+  (<-- X 10)
+  (<-- Y 4)
+  (ex4-2))

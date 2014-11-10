@@ -1,0 +1,20 @@
+(begin
+  (def X)
+  (def Y)
+  (def (ex4-2)
+    (begin
+      (def Z)
+      (def (g)
+        (if (nzero? z)
+            (begin (add1 X) (sub1 Z) (g)) 
+            (begin)))
+      (def (f)
+        (if (nzero? X)
+            (begin
+              (add1 Y) (add1 Z) (sub1 X) (f))
+            (g)))
+      (clear Y)
+      (f)))
+  (<-- X 10)
+  (<-- Y 4)
+  (ex4-2))
