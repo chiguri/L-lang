@@ -8,7 +8,9 @@
         (def (loop)
            (if (nzero? Z)
                (begin
-                  (sub1 Z) (add1 W) (loop))))
+                  (display Z)
+                  (sub1 Z) (add1 W) (loop))
+               (display "finish-loop")))
         (clear W)
         (<- Z X)
         (loop)

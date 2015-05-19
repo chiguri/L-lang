@@ -1,3 +1,6 @@
+; for compilation
+#lang r5rs
+
 ;; 環境から変数と値のペアを取り出す
 (define (defined x e)
   (if (null? e) #f
@@ -172,7 +175,9 @@
         ((eq? 'display (car t))
          (if (null? (cdr t))
              #t
-             (error-disp c "syntax : display macro does not get any arguments")))
+             (if (null? (cddr t))
+                 #t
+                 (error-disp c "syntax : display macro get at most 1 arguments"))))
         (else (error-disp c "syntax : something wrong, but what happen? : " t))))
 
 
@@ -296,7 +301,14 @@
                   #t) ;; TODO 全てのXnがこの環境で定義されているかを確かめる。forall？
                  (else
                   (error-disp c "type : the number of parameters of " (cadr t) " (" (length (caddr proc)) " and that of the arguments " (length (cddr t)) " are missmatch")))))
-        ((eq? 'display (car t)) #t) ; nothing to do after syntax-check
+        ((eq? 'display (car t))
+           (if (null? (cdr t))
+               #t
+               (if (symbol? (cadr t))
+                   (if (num-variable? (cadr t) e)
+                       #t
+                       (error-disp "type : display must get a variable if the argument is a symbol, but an undefined variable or a procedure name :" (cadr t)))
+                   #t)))
         (else (error-disp c "type : what happened?"))))
 
 
@@ -305,9 +317,13 @@
 
 ;; 環境出力（自動の出力だと分かりづらい、手続きが環境を持つためループするので環境をスキップする）
 (define (display-env e)
-  (if (null? e)
-      (newline)
-      (begin (display "{") (newline) (display-frame (car e)) (display "}") (newline) (display-env (cdr e)))))
+  (define (display-env2 e)
+    (if (null? e)
+        (newline)
+        (begin (display "{") (newline) (display-frame (car e)) (display "}") (newline) (display-env2 (cdr e)))))
+  (display "Current-environment :")
+  (newline)
+  (display-env2 e))
 (define (display-frame e)
   (if (null? e) e (begin (display-cell (car e)) (display-frame (cdr e)))))
   
@@ -417,7 +433,16 @@
          (let ((f (cdr (defined (cadr t) e))))
            (eval-program (caddr f) (cons (proc-env (cddr t) (cadr f) e '()) (car f)))))
         ((eq? 'display (car t))
-         (display-env e))
+         (if (null? (cdr t))
+             (display-env e)
+             (begin
+              (if (symbol? (cadr t))
+                  (begin
+                   (display (cadr t))
+                   (display " : ")
+                   (display (cdr (defined (cadr t) e))))
+                  (display (cadr t)))
+              (newline))))
         (else (error-disp "what happened?" ))))
 
 (define (entry-arguments n al e)
@@ -444,53 +469,5 @@
 
 ;;-----------------------------------------------------------------------------------
 
-;; test用データ
-(define test
-  '(begin (def X)
-          (def (T W Z) (if (nzero? W) (begin) (begin (sub1 W) (call T W Z) (add1 Z) (<- X W))))
-;          (def (S) (begin (def W) (def Z) (<- W X1) (<- Z X2) (if (nzero? W) (<-- Y Z) (begin (sub1 W) (add1 Z) (sharp S W Z)))))
-          (def (S) (begin (def W) (def Z) (<- W X1) (<- Z X2) (if (nzero? W) (<- Y Z) (begin (sub1 W) (add1 Z) (sharp S W Z)))))
-          (add1 X)
-          (<-- Y 3)
-          (call T X Y)
-          (sharp S Y 4)))
-(define tenv '(()))
-
-;(execute-input)
-
-(define ex4-2
-  '(begin (def X)
-          (def (ex4-2)
-            (begin
-              (def Z)
-              (def (g)
-                (if (nzero? z)
-                    (begin (add1 X) (sub1 Z) (g)) 
-                    (begin)))
-              (def (f)
-                (if (nzero? X)
-                    (begin
-                      (add1 X) (add1 Z) (sub1 X) (f))
-                    (g)))
-              (clear X)
-              (f)))
-          (<-- X 10)
-          (ex4-2)))
-
-(define ex4-3
-  '(begin
-     (def X1)
-     (def X2)
-     (def (f) (<- Y X2))
-     (<-- X1 3)
-     (<-- X2 4)
-     (sharp f 1 X1)))
-
-(define ex
-  '(begin
-     (def X1)
-     (def X2)
-     (def (f Z X2) (<- Y X2))
-     (<-- X1 3)
-     (<-- X2 4)
-     (call f 1 X1)))
+;; for executable
+(execute-file (symbol->string (read)))
